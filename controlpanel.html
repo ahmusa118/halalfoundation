@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Control Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .groups {
+      display: flex;
+      justify-content: space-between;
+    }
+    .group {
+      width: 48%;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .group h2 {
+      margin-bottom: 15px;
+      color: #3498db;
+    }
+    .link {
+      display: block;
+      margin-bottom: 8px;
+      color: #3498db;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .link:hover {
+      color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Control Panel</h1>
+  <div class="groups">
+    <div class="group">
+        <h2>Upload Section</h2>
+        <a class="link" href="http://localhost:3000/pw">/pw</a>
+        <a class="link" href="http://localhost:3000/testimonial">/testimonial</a>
+        <a class="link" href="http://localhost:3000/">/ (Home)</a>
+      </div>
+    <div class="group">
+      <h2>Edit Section</h2>
+      <a class="link" href="http://localhost:3000/editpw">/editpw</a>
+      <a class="link" href="http://localhost:3000/edit/testimonial">/edit/testimonial</a>
+      <a class="link" href="http://localhost:3000/edit">/edit</a>
+    </div>
+   
+  </div>
+</body>
+</html>

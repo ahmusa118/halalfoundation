@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            cursor: pointer;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        li:hover {
+            background-color: #f0f0f0;
+        }
+        form {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 400px;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 95%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #pointsContainer {
+            margin-bottom: 10px;
+        }
+        #pointsContainer input {
+            width: 95%;
+            margin-bottom: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .success, .error {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #2ecc71;
+        }
+        .error {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project List</h1>
+    
+    <ul id="projectList">
+      
+        <!-- Projects will be displayed here -->
+    </ul>
+
+    <h2>Edit Project</h2>
+    <form id="editForm">
+        <input type="hidden" id="projectId" name="projectId">
+        <label for="projectName">Project Name:</label>
+        <input type="text" id="projectName" name="projectName">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title">
+        <label for="icon">Icon:</label>
+        <input type="text" id="icon" name="icon">
+        <label for="iconBg">Icon Background:</label>
+        <input type="text" id="iconBg" name="iconBg">
+        <label for="startdate">Start Date:</label>
+        <input type="date" id="startdate" name="startdate">
+        <label for="enddate">End Date:</label>
+        <input type="date" id="enddate" name="enddate">
+        <label for="points">Points:</label>
+        <div id="pointsContainer">
+            <!-- Points will be displayed here -->
+        </div>
+        <button type="submit">Edit</button>
+    </form>
+
+    <h2>Delete Project</h2>
+    <form id="deleteForm">
+        <input type="hidden" id="deleteProjectId" name="deleteProjectId">
+        <button type="submit">Delete</button>
+    </form>
+
+    <script>
+        // Function to format a date to "YYYY-MM-DD" format
+        function formatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Function to populate the project list
+        function populateProjectList() {
+            fetch('http://localhost:3000/allprojects')
+                .then(response => response.json())
+                .then(data => {
+                    const projectList = document.getElementById('projectList');
+                    projectList.innerHTML = '';
+
+                    data.forEach(project => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = project.project_name; // Use 'project_name' from your MongoDB record
+                        listItem.addEventListener('click', () => {
+                            // Populate the edit and delete forms with the selected project's data
+                            const projectIdInput = document.getElementById('projectId');
+                            const deleteProjectIdInput = document.getElementById('deleteProjectId');
+                            const projectNameInput = document.getElementById('projectName');
+                            const titleInput = document.getElementById('title');
+                            const iconInput = document.getElementById('icon');
+                            const iconBgInput = document.getElementById('iconBg');
+                            const startdateInput = document.getElementById('startdate');
+                            const enddateInput = document.getElementById('enddate');
+                            const pointsContainer = document.getElementById('pointsContainer');
+
+                            projectIdInput.value = project._id; // Use '_id' from your MongoDB record
+                            deleteProjectIdInput.value = project._id; // Use '_id' for deletion
+                            projectNameInput.value = project.project_name; // Use 'project_name' from your MongoDB record
+                            titleInput.value = project.title; // Use 'title' from your MongoDB record
+                            iconInput.value = project.icon; // Use 'icon' from your MongoDB record
+                            iconBgInput.value = project.iconBg; // Use 'iconBg' from your MongoDB record
+                            startdateInput.value = formatDate(project.startdate); // Format and set the start date
+                            enddateInput.value = formatDate(project.enddate); // Format and set the end date
+
+                            // Clear previous points
+                            pointsContainer.innerHTML = '';
+                            // Map out and create text inputs for each point
+                            project.points.forEach(point => {
+                                const pointInput = document.createElement('input');
+                                pointInput.type = 'text';
+                                pointInput.name = 'point';
+                                pointInput.value = point;
+                                pointsContainer.appendChild(pointInput);
+                            });
+                        });
+                        projectList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        // Function to handle the edit form submission
+        document.getElementById('editForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const projectIdInput = document.getElementById('projectId');
+            const projectNameInput = document.getElementById('projectName');
+            const titleInput = document.getElementById('title');
+            const iconInput = document.getElementById('icon');
+            const iconBgInput = document.getElementById('iconBg');
+            const startdateInput = document.getElementById('startdate');
+            const enddateInput = document.getElementById('enddate');
+
+            const pointsInputs = document.querySelectorAll('#pointsContainer input');
+            const points = Array.from(pointsInputs).map(pointInput => pointInput.value.trim());
+
+            const editedProject = {
+                project_name: projectNameInput.value, // Use 'project_name' from your MongoDB record
+                title: titleInput.value, // Use 'title' from your MongoDB record
+                icon: iconInput.value, // Use 'icon' from your MongoDB record
+                iconBg: iconBgInput.value, // Use 'iconBg' from your MongoDB record
+                startdate: startdateInput.value, // Use 'startdate' from your MongoDB record
+                enddate: enddateInput.value, // Use 'enddate' from your MongoDB record
+                points: points, // Use the edited points
+            };
+
+            // Make an API call to update the project with the provided _id
+            const projectId = projectIdInput.value;
+            fetch(`http://localhost:3000/editproject/${projectId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editedProject),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Project edited:', data);
+                    // Refresh the project list after editing
+                    populateProjectList();
+                })
+                .catch(error => {
+                    console.error('Error editing project:', error);
+                });
+        });
+
+        // Function to handle the delete form submission
+        document.getElementById('deleteForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const deleteProjectIdInput = document.getElementById('deleteProjectId');
+            const projectId = deleteProjectIdInput.value;
+
+            // Make an API call to delete the project with the provided _id
+            fetch(`http://localhost:3000/deleteproject/${projectId}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Project deleted:', data);
+                    // Refresh the project list after deletion
+                    populateProjectList();
+                })
+                .catch(error => {
+                    console.error('Error deleting project:', error);
+                });
+        });
+
+        // Populate the project list on page load
+        populateProjectList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Work Form</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        h1 {
+          color: #333;
+        }
+        form {
+          background: #fff;
+          border: 1px solid #ccc;
+          padding: 20px;
+          margin-top: 20px;
+          max-width: 400px;
+        }
+        label {
+          display: block;
+          margin-bottom: 5px;
+          color: #333;
+        }
+        input[type="text"],
+        textarea {
+          width: 95%;
+          margin-bottom: 10px;
+          padding: 8px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+        }
+        button {
+          padding: 8px 15px;
+          background-color: #3498db;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #2980b9;
+        }
+        #successMessage, #failureMessage {
+          margin-top: 10px;
+          padding: 10px;
+          border-radius: 5px;
+        }
+        #successMessage {
+          display: none;
+          color: #2ecc71;
+          background-color: #fff;
+        }
+        #failureMessage {
+          display: none;
+          color: #e74c3c;
+          background-color: #fff;
+        }
+      </style>
+   
+</head>
+<body>
+    <h1>Upload Projects</h1>
+    <form id="uploadForm" action="/projwork" method="POST" enctype="multipart/form-data">
+        <label for="title">Title:</label>
+        <input type="text" name="title" required><br>
+
+        <label for="description">Description:</label>
+        <input type="text" name="description" required><br>
+
+        <label for="tags">Tags:</label>
+        <div id="tagsContainer">
+            <div>
+                <input type="text" name="tagNames" placeholder="Tag Name" class="tag-name">
+                <select name="tagColors" class="tag-color">
+                    <option value="blue-text-gradient">Blue</option>
+                    <option value="green-text-gradient">Green</option>
+                    <option value="orange-text-gradient">Orange</option>
+                    <option value="white-text-gradient">White</option>
+                </select>
+                <button type="button" class="remove-tag">Remove</button>
+            </div>
+        </div>
+        <button type="button" id="addTag">+ Add Tag</button><br>
+
+        <label for="images">Images only 1:</label>
+        <input type="file" name="images" accept=".jpg, .jpeg, .png" multiple required><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <div id="message"></div>
+
+    <script>
+        document.getElementById("addTag").addEventListener("click", function () {
+            const tagsContainer = document.getElementById("tagsContainer");
+
+            const tagDiv = document.createElement("div");
+
+            const tagNameInput = document.createElement("input");
+            tagNameInput.type = "text";
+            tagNameInput.name = "tagNames";
+            tagNameInput.placeholder = "Tag Name";
+            tagNameInput.classList.add("tag-name");
+
+            const tagColorSelect = document.createElement("select");
+            tagColorSelect.name = "tagColors";
+            tagColorSelect.classList.add("tag-color");
+
+            const colorOptions = ['blue-text-gradient', 'green-text-gradient', 'orange-text-gradient', 'white-text-gradient'];
+
+            colorOptions.forEach(option => {
+                const colorOption = document.createElement("option");
+                colorOption.value = option;
+                colorOption.textContent = option.split('-').join(' ');
+                tagColorSelect.appendChild(colorOption);
+            });
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.classList.add("remove-tag");
+            removeButton.textContent = "Remove";
+
+            tagDiv.appendChild(tagNameInput);
+            tagDiv.appendChild(tagColorSelect);
+            tagDiv.appendChild(removeButton);
+
+            tagsContainer.appendChild(tagDiv);
+
+            removeButton.addEventListener("click", function () {
+                tagsContainer.removeChild(tagDiv);
+            });
+        });
+
+        document.getElementById("uploadForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+
+            // Check if all required fields are populated
+            const title = form.querySelector('input[name="title"]').value;
+            const description = form.querySelector('input[name="description"]').value;
+            const images = form.querySelector('input[name="images"]').files.length;
+            const tagNames = document.querySelectorAll(".tag-name");
+            const tagColors = document.querySelectorAll(".tag-color");
+            let allTagsValid = true;
+
+            tagNames.forEach((tagName, index) => {
+                const name = tagName.value;
+                const color = tagColors[index].value;
+                if (name === "" || color === "") {
+                    allTagsValid = false;
+                }
+            });
+
+            if (title === "" || description === "" || images === 0 || !allTagsValid) {
+                document.getElementById("message").innerText = 'Please fill out all fields';
+                return;
+            }
+
+            // If all fields are populated, proceed with form submission
+            const formData = new FormData(form);
+
+            formData.delete("tags");
+
+            const tags = [];
+
+            tagNames.forEach((tagName, index) => {
+                const name = tagName.value;
+                const color = tagColors[index].value;
+                if (name !== "" && color !== "") {
+                    tags.push({ name: name, color: color });
+                }
+            });
+
+            tags.forEach((tag) => {
+                Object.entries(tag).forEach(([key, value]) => {
+                    formData.append(`tags[${tags.indexOf(tag)}][${key}]`, value);
+                });
+            });
+
+            fetch('/projwork', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("message").innerText = 'Success: Document uploaded successfully';
+                form.reset();
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById("message").innerText = 'Error: Failed to upload work data';
+            });
+        });
+    </script>
+</body>
+</html>

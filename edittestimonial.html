@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Testimonial List and Edit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        li:hover {
+            background: #f9f9f9;
+        }
+        form {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"], textarea {
+            width: 95%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #2ecc71;
+        }
+        .error {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Testimonial List</h1>
+    
+    <ul id="testimonialList">
+        <!-- Testimonials will be displayed here -->
+    </ul>
+
+    <h2>Edit Testimonial</h2>
+    <form id="editTestimonialForm">
+        <input type="hidden" id="testimonialId" name="testimonialId">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="company">Company:</label>
+        <input type="text" id="company" name="company" required>
+        <label for="testimonial">Testimonial:</label>
+        <textarea id="testimonialText" name="testimonial" required></textarea>
+        <button type="submit">Edit Testimonial</button>
+        <div class="response"></div>
+    </form>
+
+    <script>
+        function populateEditForm(testimonial) {
+            const testimonialIdInput = document.getElementById('testimonialId');
+            const nameInput = document.getElementById('name');
+            const companyInput = document.getElementById('company');
+            const testimonialTextInput = document.getElementById('testimonialText');
+
+            testimonialIdInput.value = testimonial._id;
+            nameInput.value = testimonial.name;
+            companyInput.value = testimonial.company;
+            testimonialTextInput.value = testimonial.testimonial;
+        }
+
+        function populateTestimonialList(testimonials) {
+            const testimonialList = document.getElementById('testimonialList');
+            testimonialList.innerHTML = '';
+
+            testimonials.forEach(testimonial => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${testimonial.name} from ${testimonial.company}`;
+                listItem.addEventListener('click', () => {
+                    populateEditForm(testimonial);
+                });
+                testimonialList.appendChild(listItem);
+            });
+        }
+
+        document.getElementById('editTestimonialForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const testimonialIdInput = document.getElementById('testimonialId');
+            const nameInput = document.getElementById('name');
+            const companyInput = document.getElementById('company');
+            const testimonialTextInput = document.getElementById('testimonialText');
+
+            const editedTestimonial = {
+                name: nameInput.value,
+                company: companyInput.value,
+                testimonial: testimonialTextInput.value,
+            };
+
+            const testimonialId = testimonialIdInput.value;
+            fetch(`http://localhost:3000/api/edittestimonial/${testimonialId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editedTestimonial),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const responseDiv = document.querySelector('.response');
+                    responseDiv.textContent = 'Success: Testimonial edited successfully';
+                    responseDiv.className = 'success';
+                    setTimeout(() => {
+                        responseDiv.textContent = '';
+                        responseDiv.className = '';
+                    }, 3000);
+                    console.log('Testimonial edited:', data);
+                })
+                .catch(error => {
+                    const responseDiv = document.querySelector('.response');
+                    responseDiv.textContent = 'Error: Failed to edit testimonial';
+                    responseDiv.className = 'error';
+                    setTimeout(() => {
+                        responseDiv.textContent = '';
+                        responseDiv.className = '';
+                    }, 3000);
+                    console.error('Error editing testimonial:', error);
+                });
+        });
+
+        fetch('http://localhost:3000/api/gettestimonials')
+            .then(response => response.json())
+            .then(data => {
+                populateTestimonialList(data);
+            })
+            .catch(error => {
+                console.error('Error fetching testimonials:', error);
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Testimonial Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-top: 20px;
+      max-width: 400px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    input[type="text"],
+    textarea {
+      width: 95%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #successMessage, #failureMessage {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    #successMessage {
+      display: none;
+      color: #2ecc71;
+      background-color: #fff;
+    }
+    #failureMessage {
+      display: none;
+      color: #e74c3c;
+      background-color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Submit a Testimonial</h1>
+  <form id="testimonialForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <label for="company">Company:</label>
+    <input type="text" id="company" name="company" required>
+    <label for="testimonial">Testimonial:</label>
+    <textarea id="testimonial" name="testimonial" required></textarea>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="successMessage"></div>
+  <div id="failureMessage"></div>
+
+  <script>
+    const form = document.getElementById('testimonialForm');
+    const successMessage = document.getElementById('successMessage');
+    const failureMessage = document.getElementById('failureMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = form.elements.name.value;
+      const company = form.elements.company.value;
+      const testimonial = form.elements.testimonial.value;
+
+      try {
+        const response = await fetch('/api/testimonials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, company, testimonial })
+        });
+
+        if (response.ok) {
+          successMessage.innerText = 'Testimonial added successfully';
+          successMessage.style.display = 'block';
+
+          failureMessage.style.display = 'none';
+          form.reset(); // Reset the form
+        } else {
+          failureMessage.innerText = 'Failed to add testimonial';
+          failureMessage.style.display = 'block';
+
+          successMessage.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        failureMessage.innerText = 'Error: Failed to add testimonial';
+        failureMessage.style.display = 'block';
+
+        successMessage.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

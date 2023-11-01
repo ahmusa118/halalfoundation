@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project work Document List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"],
+        select {
+            width: 95%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #tagsContainer {
+            margin-bottom: 10px;
+        }
+        #tagsContainer div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .success, .error {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #2ecc71;
+        }
+        .error {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project work Document List</h1>
+    
+    <ul id="pwDocumentList">
+        <!-- Pw Documents will be displayed here -->
+    </ul>
+
+    <h2>Edit Project work Document</h2>
+    <form id="editForm">
+        <input type="hidden" id="pwId" name="pwId">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title">
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description">
+        <label for="tags">Tags:</label>
+        <div id="tagsContainer">
+            <!-- Tags will be displayed here -->
+        </div>
+        <button type="submit">Edit</button>
+        <div class="response"></div>
+    </form>
+
+    <h2>Delete Project work Document</h2>
+    <form id="deleteForm">
+        <input type="hidden" id="deletePwId" name="deletePwId">
+        <button type="submit">Delete</button>
+    </form>
+
+    <script>
+        function populateEditForm(pwDocument) {
+            const pwIdInput = document.getElementById('pwId');
+            const titleInput = document.getElementById('title');
+            const descriptionInput = document.getElementById('description');
+            const tagsContainer = document.getElementById('tagsContainer');
+
+            pwIdInput.value = pwDocument._id;
+            titleInput.value = pwDocument.title;
+            descriptionInput.value = pwDocument.description;
+
+            tagsContainer.innerHTML = '';
+
+            pwDocument.tags.forEach(tag => {
+                const tagDiv = document.createElement('div');
+                const tagNameInput = document.createElement('input');
+                const tagColorSelect = document.createElement('select');
+
+                tagNameInput.type = 'text';
+                tagNameInput.name = 'tagName';
+                tagNameInput.value = tag.name; // Assuming the property name is 'name'
+
+                tagColorSelect.name = 'tagColor';
+
+                const colorOptions = ['green-text-gradient', 'orange-text-gradient', 'blue-text-gradient'];
+
+                colorOptions.forEach(option => {
+                    const colorOption = document.createElement('option');
+                    colorOption.value = option;
+                    colorOption.textContent = option;
+                    tagColorSelect.appendChild(colorOption);
+                });
+
+                tagDiv.appendChild(tagNameInput);
+                tagDiv.appendChild(tagColorSelect);
+                tagsContainer.appendChild(tagDiv);
+            });
+        }
+
+        function populatePwDocumentList() {
+            fetch('http://localhost:3000/allprojworks')
+                .then(response => response.json())
+                .then(data => {
+                    const pwDocumentList = document.getElementById('pwDocumentList');
+                    pwDocumentList.innerHTML = '';
+
+                    data.forEach(pwDocument => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = pwDocument.title;
+                        listItem.addEventListener('click', () => {
+                            populateEditForm(pwDocument);
+                            const deletePwIdInput = document.getElementById('deletePwId');
+                            deletePwIdInput.value = pwDocument._id;
+                        });
+                        pwDocumentList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const pwIdInput = document.getElementById('pwId');
+            const titleInput = document.getElementById('title');
+            const descriptionInput = document.getElementById('description');
+            const tagElements = document.querySelectorAll('#tagsContainer div');
+
+            const tags = [];
+            tagElements.forEach(tagDiv => {
+                const tagNameInput = tagDiv.querySelector('input[name="tagName"]');
+                const tagColorSelect = tagDiv.querySelector('select[name="tagColor"]');
+                const tagName = tagNameInput.value;
+                const tagColor = tagColorSelect.value;
+                tags.push({ name: tagName, color: tagColor });
+            });
+
+            const editedPwDocument = {
+                title: titleInput.value,
+                description: descriptionInput.value,
+                tags,
+            };
+
+            const pwId = pwIdInput.value;
+            fetch(`http://localhost:3000/editpwdocument/${pwId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editedPwDocument),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const responseDiv = document.querySelector('.response');
+                    responseDiv.textContent = 'Success: Document edited successfully';
+                    responseDiv.className = 'success';
+                    setTimeout(() => {
+                        responseDiv.textContent = '';
+                        responseDiv.className = '';
+                    }, 3000);
+                    console.log('Pw document edited:', data);
+                })
+                .catch(error => {
+                    const responseDiv = document.querySelector('.response');
+                    responseDiv.textContent = 'Error: Failed to edit document';
+                    responseDiv.className = 'error';
+                    setTimeout(() => {
+                        responseDiv.textContent = '';
+                        responseDiv.className = '';
+                    }, 3000);
+                    console.error('Error editing Pw document:', error);
+                });
+        });
+
+        document.getElementById('deleteForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const deletePwIdInput = document.getElementById('deletePwId');
+            const pwId = deletePwIdInput.value;
+
+            fetch(`http://localhost:3000/deletepwdocument/${pwId}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Pw document deleted:', data);
+                    // Handle success response as needed
+                    // You might update the document list, show a success message, etc.
+                })
+                .catch(error => {
+                    console.error('Error deleting Pw document:', error);
+                    // Handle error as needed, show an error message, etc.
+                });
+        });
+
+        populatePwDocumentList();
+    </script>
+</body>
+</html>
