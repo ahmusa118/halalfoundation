@@ -3,9 +3,11 @@ const app=express()
 const bodyParser=require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json())
+const fs = require('fs');
 const multer=require('multer')
 require('dotenv').config()
 const mongoose=require('mongoose')
+const Slider=require('./models/Sliderimagenames')
 const cors=require('cors')
 const Works = require('./models/Works');
 const Pw=require('./models/Projworks')
@@ -44,10 +46,21 @@ app.get('/testimonial',(req,res)=>{
 app.get('/edit/testimonial',(req,res)=>{
     res.sendFile(path.join(__dirname,'edittestimonial.html'))
 })
-
+app.get('/editsliders',(req,res)=>{
+    res.sendFile(path.join(__dirname,'editsliders.html'))
+})
 app.get('/', (req, res) => {
     // Serve the HTML form file when a GET request is made to /uploadworkform.
     res.sendFile(path.join(__dirname, 'index.html'));
+})
+app.get('/sliderimages',async(req,res)=>{
+    try{
+    const data= await Slider.find()
+    res.status(200).json(data)
+    }
+    catch(error){
+res.status(500).json(error)
+    }
 })
 
 app.get('/edit', (req, res) => {
@@ -59,6 +72,65 @@ app.get('/cpanel', (req, res) => {
     // Serve the HTML form file when a GET request is made to /uploadworkform.
     res.sendFile(path.join(__dirname, 'controlpanel.html'));
 })
+app.get('/sliderpost', (req, res) => {
+    // Serve the HTML form file when a GET request is made to /uploadworkform.
+    res.sendFile(path.join(__dirname, 'postslider.html'));
+})
+app.post('/postslider',upload.array('images', 5),(req, res)=>{
+    const images = req.files.map((file) => file.path);
+images.forEach(async(i)=>{
+   
+    try{
+        const slider=new Slider({name:i})
+       await slider.save()
+       res.status(200).send('Item saved')
+    }
+    catch(e){
+        res.status(500).json({message:e})
+    }
+})
+    
+})
+
+app.get('/sliderImages2', async (req, res) => {
+    try {
+      const images = await Slider.find();
+      res.json(images);
+    } catch (error) {
+      res.status(500).send('Error fetching slider images');
+      console.error('Error fetching slider images:', error);
+    }
+  });
+  app.delete('/deletesliderimage/:id', async (req, res) => {
+    const imageId = req.params.id;
+  
+    try {
+      const image = await Slider.findOne({ _id: imageId });
+  
+      if (!image) {
+        res.status(404).send('Image not found');
+        return;
+      }
+  
+      const imageName = image.name;
+      const fileName = imageName.replace('uploads/', '');
+  
+      fs.unlink(path.join(__dirname, 'uploads', fileName), async (err) => {
+        if (err) {
+          res.status(500).send(`Error deleting file: ${err}`);
+          console.error(`Error deleting file: ${err}`);
+        } else {
+          await Slider.findOneAndDelete({ _id: imageId });
+          res.send('File and record deleted successfully');
+        }
+      });
+    } catch (error) {
+      res.status(500).send('Error deleting image');
+      console.error('Error deleting image:', error);
+    }
+  });
+  
+  
 app.post('/uploadwork', upload.array('images', 5), (req, res) => {
     const {
         title,

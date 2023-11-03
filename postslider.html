@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>Upload Images</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        h1 {
+          color: #333;
+        }
+        ul {
+          list-style: none;
+          padding: 0;
+        }
+        li {
+          margin: 5px 0;
+          padding: 10px;
+          background: #fff;
+          border: 1px solid #ccc;
+          cursor: pointer;
+        }
+        li:hover {
+          background: #f9f9f9;
+        }
+        form {
+          background: #fff;
+          border: 1px solid #ccc;
+          padding: 20px;
+          margin-top: 20px;
+        }
+        label {
+          display: block;
+          margin-bottom: 5px;
+          color: #333;
+        }
+        input[type="text"], textarea {
+          width: 95%;
+          margin-bottom: 10px;
+          padding: 8px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+        }
+        button {
+          padding: 8px 15px;
+          background-color: #3498db;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #2980b9;
+        }
+        .response {
+          margin-top: 10px;
+          padding: 10px;
+          border-radius: 5px;
+        }
+        .success {
+          background-color: #2ecc71;
+        }
+        .error {
+          background-color: #e74c3c;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Image Uploader</h1>
+      <ul>
+        <!-- List of uploaded images will appear here -->
+      </ul>
+
+      <form id="uploadForm" enctype="multipart/form-data">
+        <label for="images">Select images:</label>
+        <input type="file" name="images" id="imageInput" multiple accept="image/*" />
+        <button type="submit">Upload</button>
+      </form>
+
+      <div class="response"></div>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const imageInput = document.getElementById('imageInput');
+      const files = imageInput.files;
+
+      for (const file of files) {
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          img.src = e.target.result;
+
+          img.onload = function() {
+            if (this.width !== 3024 || this.height !== 1964) {
+              alert('Invalid dimensions. Images must be 3024x1964 pixels.');
+            } else {
+              const formData = new FormData();
+              formData.append('images', file);
+
+              fetch('/postslider', {
+                method: 'POST',
+                body: formData
+              })
+              .then(response => response.text())
+              .then(data => {
+                console.log(data);
+                alert(data);
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving data');
+              });
+            }
+          };
+        };
+
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>
+

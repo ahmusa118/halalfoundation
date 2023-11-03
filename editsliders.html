@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Slider Images</title>
+  <style>
+    /* Your CSS styles */
+    /* Your existing styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+    }
+    li:hover {
+      background-color: #f0f0f0;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #f44336; /* Red color */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #d32f2f; /* Darker red on hover */
+    }
+    img {
+      width: 300px;
+      margin-right: 10px;
+    }
+    .success, .error {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .success {
+      background-color: #2ecc71;
+    }
+    .error {
+      background-color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <h1>Slider Images</h1>
+  <ul id="imageList">
+    <!-- Images will be listed here -->
+  </ul>
+
+  <script>
+    fetch('/sliderImages2')
+      .then(response => response.json())
+      .then(data => {
+        const imageList = document.getElementById('imageList');
+
+        data.forEach(item => {
+          const listItem = document.createElement('li');
+
+          const img = document.createElement('img');
+          img.src = `http://localhost:3000/ind/${item.name.replace('uploads/', '')}`;
+          listItem.appendChild(img);
+
+          const deleteButton = document.createElement('button');
+          deleteButton.textContent = 'Delete';
+          deleteButton.addEventListener('click', () => deleteImage(item._id)); // Pass _id for deletion
+
+          listItem.appendChild(deleteButton);
+          imageList.appendChild(listItem);
+        });
+      })
+      .catch(error => console.error('Error fetching slider images:', error));
+
+    function deleteImage(imageId) {
+      fetch(`/deletesliderimage/${imageId}`, { method: 'DELETE' })
+        .then(response => response.text())
+        .then(data => {
+          console.log(data); // Log the response message
+          // Call back function for success
+          if (data.includes('successfully')) {
+            // Do something on successful deletion
+            alert('Image deleted successfully');
+          }
+          // Update UI if necessary
+        })
+        .catch(error => console.error('Error deleting image:', error));
+    }
+  </script>
+</body>
+</html>
