@@ -14,6 +14,7 @@ const Pw=require('./models/Projworks')
 const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 const Tes=require('./models/Testimonials')
+const About=require('./models/About')
 app.use(cors())
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -52,6 +53,9 @@ app.get('/editsliders',(req,res)=>{
 app.get('/', (req, res) => {
     // Serve the HTML form file when a GET request is made to /uploadworkform.
     res.sendFile(path.join(__dirname, 'index.html'));
+})
+app.get('/about',(req,res)=>{
+  res.sendFile(path.join(__dirname, 'about.html'));
 })
 app.get('/sliderimages',async(req,res)=>{
     try{
@@ -209,7 +213,75 @@ app.post('/api/testimonials', async (req, res) => {
   });
   
   
+  app.get('/fetchAboutData', async (req, res) => {
+    try {
+      const aboutData = await About.findOne(); // Fetch the About data; this assumes only one document exists
+      res.json(aboutData); // Send the fetched data as a JSON response
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching About data' });
+    }
+  });
+  
+  // Endpoint to update the About data
+  app.put('/updateAboutData', async (req, res) => {
+    const { overview, services } = req.body;
+  
+    try {
+      const about = await About.findOne(); // Assuming you only have one About document
+  
+      about.overview = overview;
+  
+      if (services && Array.isArray(services)) {
+        about.services = services;
+      }
+  
+      await about.save();
+  
+      res.status(200).send('About data updated successfully');
+    } catch (error) {
+      res.status(500).send('Error updating About data');
+      console.error('Error updating About data:', error);
+    }
+  });
+  app.delete('/deleteService/:serviceId', async (req, res) => {
+    const serviceId = req.params.serviceId;
+  
+    try {
+      const data = await About.findOneAndUpdate(
+        {},
+        { $pull: { services: { _id: serviceId } } },
+        { new: true }
+      );
+  
+      if (!data) {
+        return res.status(404).json({ message: 'Service not found' });
+      }
+  
+      return res.status(200).json(data);
+    } catch (error) {
+      return res.status(500).json({ message: 'Failed to delete service' });
+    }
+  });
+  
 
+  app.post('/updateAboutData', async (req, res) => {
+    const { overview, servicesTitle, servicesIcon } = req.body;
+  
+    try {
+      const newAboutData = new About({
+        overview,
+        services: [{ title: servicesTitle, icon: servicesIcon }]
+      });
+  
+      await newAboutData.save();
+  
+      res.status(200).send('About data created successfully');
+    } catch (error) {
+      res.status(500).send('Error creating About data');
+      console.error('Error creating About data:', error);
+    }
+  });
+  
 
 app.get("/ind/:name", function(req, res) {
     const {name}=req.params

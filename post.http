@@ -1,0 +1,12 @@
+POST http://localhost:3000/updateAboutData
+Content-Type: application/json
+
+{
+    "overview": "New Overview Content",
+    "servicesTitle": "Agent",
+    "servicesIcon": "web"
+}
+
+###
+
+GET http://localhost:3000/fetchAboutData

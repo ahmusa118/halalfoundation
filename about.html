@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit About Data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-top: 20px;
+      max-width: 500px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    input[type="text"], select {
+      width: 95%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .deleteButton {
+      padding: 5px 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .deleteButton:hover {
+      background-color: #c0392b;
+    }
+    .response {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .success {
+      background-color: #2ecc71;
+    }
+    .error {
+      background-color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit About Data</h1>
+  <form id="aboutForm">
+    <label for="overview">Overview:</label>
+    <input type="text" id="overview" name="overview">
+
+    <div id="servicesContainer">
+      <!-- Existing services will be populated here -->
+    </div>
+
+    <button type="button" id="addServiceButton">Add Service</button>
+
+    <button type="submit">Update</button>
+  </form>
+
+  <script>
+    // Function to remove an item from both UI and MongoDB (simulated)
+    const deleteService = async (serviceDiv, serviceId) => {
+      // Simulate deletion from the UI
+      serviceDiv.remove();
+
+      // Simulate deletion from the database
+      try {
+        const response = await fetch(`/deleteService/${serviceId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          // Send additional data if required
+        });
+
+        if (response.ok) {
+          console.log("Record deleted from MongoDB");
+          // Add any success actions here
+        } else {
+          throw new Error("Failed to delete record from MongoDB");
+        }
+      } catch (error) {
+        console.error(error);
+        // Handle failure, display error message, or other actions
+      }
+    };
+
+    // Fetch the data from the API and update the form elements
+    fetch('/fetchAboutData')
+      .then(response => response.json())
+      .then(data => {
+        const aboutForm = document.getElementById('aboutForm');
+        const { overview, services } = data;
+
+        document.getElementById('overview').value = overview;
+
+        const servicesContainer = document.getElementById('servicesContainer');
+
+        // Populate existing services with delete button and action
+        services.forEach(service => {
+          const serviceDiv = document.createElement("div");
+          serviceDiv.classList.add("service");
+
+          const serviceTitleInput = document.createElement("input");
+          serviceTitleInput.type = "text";
+          serviceTitleInput.value = service.title;
+          serviceTitleInput.name = "servicesTitle";
+
+          const serviceIconSelect = document.createElement("select");
+          serviceIconSelect.name = "servicesIcon";
+
+          const iconOptions = ["web", "mobile", "backend",'creator']; // Replace with your icon options
+          iconOptions.forEach(icon => {
+            const option = document.createElement("option");
+            option.text = icon;
+            serviceIconSelect.add(option);
+          });
+          serviceIconSelect.value = service.icon;
+
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Delete";
+          deleteButton.classList.add("deleteButton");
+          deleteButton.addEventListener("click", () => {
+            deleteService(serviceDiv, service._id); // Pass the service ID
+          });
+
+          serviceDiv.appendChild(serviceTitleInput);
+          serviceDiv.appendChild(serviceIconSelect);
+          serviceDiv.appendChild(deleteButton);
+          servicesContainer.appendChild(serviceDiv);
+        });
+      })
+      .catch(error => console.error("Error fetching About data:", error));
+
+    // Add a new service element
+    document.getElementById("addServiceButton").addEventListener("click", () => {
+      const servicesContainer = document.getElementById("servicesContainer");
+
+      const newServiceDiv = document.createElement("div");
+      newServiceDiv.classList.add("service");
+
+      const newServiceTitleInput = document.createElement("input");
+      newServiceTitleInput.type = "text";
+      newServiceTitleInput.name = "servicesTitle";
+
+      const newServiceIconSelect = document.createElement("select");
+      newServiceIconSelect.name = "servicesIcon";
+
+      const iconOptions = ["web", "mobile", "backend","creator"]; // Replace with your icon options
+      iconOptions.forEach(icon => {
+        const option = document.createElement("option");
+        option.text = icon;
+        newServiceIconSelect.add(option);
+      });
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.classList.add("deleteButton");
+      deleteButton.addEventListener("click", () => {
+        deleteService(newServiceDiv);
+      });
+
+      newServiceDiv.appendChild(newServiceTitleInput);
+      newServiceDiv.appendChild(newServiceIconSelect);
+      newServiceDiv.appendChild(deleteButton);
+      servicesContainer.appendChild(newServiceDiv);
+    });
+
+    // Updating the About Data
+    document.getElementById("aboutForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const overview = document.getElementById("overview").value;
+
+      const services = [];
+      const serviceDivs = document.querySelectorAll(".service");
+      serviceDivs.forEach(serviceDiv => {
+        const serviceTitle = serviceDiv.querySelector('input[name="servicesTitle"]').value;
+        const serviceIcon = serviceDiv.querySelector('select[name="servicesIcon"]').value;
+        services.push({ title: serviceTitle, icon: serviceIcon });
+      });
+
+      fetch("/updateAboutData", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ overview, services }),
+      })
+        .then(response => response.text())
+        .then(data => {
+          console.log(data); // Log the response
+          // You can display a success message or perform UI updates here
+        })
+        .catch(error => console.error("Error updating About data:", error));
+    });
+  </script>
+</body>
+</html>
+
+
+
