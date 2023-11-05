@@ -129,7 +129,7 @@
             };
 
             const testimonialId = testimonialIdInput.value;
-            fetch(`http://localhost:3000/api/edittestimonial/${testimonialId}`, {
+            fetch(`https://halalfoundation.onrender.com/api/edittestimonial/${testimonialId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -159,7 +159,7 @@
                 });
         });
 
-        fetch('http://localhost:3000/api/gettestimonials')
+        fetch('https://halalfoundation.onrender.com/api/gettestimonials')
             .then(response => response.json())
             .then(data => {
                 populateTestimonialList(data);

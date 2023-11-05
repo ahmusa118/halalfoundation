@@ -1,4 +1,4 @@
-POST http://localhost:3000/updateAboutData
+POST https://halalfoundation.onrender.com/updateAboutData
 Content-Type: application/json
 
 {
@@ -9,4 +9,4 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3000/fetchAboutData
+GET https://halalfoundation.onrender.com/fetchAboutData
