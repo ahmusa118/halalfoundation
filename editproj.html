@@ -133,7 +133,7 @@
         }
 
         function populatePwDocumentList() {
-            fetch('http://localhost:3000/allprojworks')
+            fetch('https://halalfoundation.onrender.com/allprojworks')
                 .then(response => response.json())
                 .then(data => {
                     const pwDocumentList = document.getElementById('pwDocumentList');
@@ -178,7 +178,7 @@
             };
 
             const pwId = pwIdInput.value;
-            fetch(`http://localhost:3000/editpwdocument/${pwId}`, {
+            fetch(`https://halalfoundation.onrender.com/editpwdocument/${pwId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -213,7 +213,7 @@
             const deletePwIdInput = document.getElementById('deletePwId');
             const pwId = deletePwIdInput.value;
 
-            fetch(`http://localhost:3000/deletepwdocument/${pwId}`, {
+            fetch(`https://halalfoundation.onrender.com/deletepwdocument/${pwId}`, {
                 method: 'DELETE',
             })
                 .then(response => response.json())

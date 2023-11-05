@@ -132,7 +132,7 @@
 
         // Function to populate the project list
         function populateProjectList() {
-            fetch('http://localhost:3000/allprojects')
+            fetch('https://halalfoundation.onrender.com/allprojects')
                 .then(response => response.json())
                 .then(data => {
                     const projectList = document.getElementById('projectList');
@@ -208,7 +208,7 @@
 
             // Make an API call to update the project with the provided _id
             const projectId = projectIdInput.value;
-            fetch(`http://localhost:3000/editproject/${projectId}`, {
+            fetch(`https://halalfoundation.onrender.com/editproject/${projectId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -234,7 +234,7 @@
             const projectId = deleteProjectIdInput.value;
 
             // Make an API call to delete the project with the provided _id
-            fetch(`http://localhost:3000/deleteproject/${projectId}`, {
+            fetch(`https://halalfoundation.onrender.com/deleteproject/${projectId}`, {
                 method: 'DELETE',
             })
                 .then(response => response.json())

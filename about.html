@@ -110,7 +110,7 @@
     };
 
     // Fetch the data from the API and update the form elements
-    fetch('/fetchAboutData')
+    fetch('https://halalfoundation.onrender.com/fetchAboutData')
       .then(response => response.json())
       .then(data => {
         const aboutForm = document.getElementById('aboutForm');
@@ -203,7 +203,7 @@
         services.push({ title: serviceTitle, icon: serviceIcon });
       });
 
-      fetch("/updateAboutData", {
+      fetch("https://halalfoundation.onrender.com/updateAboutData", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
